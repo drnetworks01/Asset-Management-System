@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/Toaster';
+import { RejectionGuard } from '@/components/ui/RejectionGuard';
 
 export const metadata: Metadata = {
   title: 'Kurikara Assets',
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <RejectionGuard />
         {children}
         <Toaster />
       </body>

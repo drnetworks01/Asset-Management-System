@@ -63,7 +63,9 @@ export function QrScanner() {
       }
     }
 
-    start();
+    start().catch((err) => {
+      console.warn('QR scanner failed to start:', err);
+    });
 
     return () => {
       cancelled = true;

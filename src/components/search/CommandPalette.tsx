@@ -47,6 +47,11 @@ export function CommandPalette() {
         if (!res.ok) throw new Error('search failed');
         const data = await res.json();
         if (!cancelled) setResults(data.results as SearchResult[]);
+      } catch (err) {
+        if (!cancelled) {
+          console.warn('Search failed:', err);
+          setResults([]);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
