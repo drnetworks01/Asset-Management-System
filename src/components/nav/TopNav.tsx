@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireUser } from '@/lib/auth/session';
 import { Button } from '@/components/ui/button';
+import { CommandPalette } from '@/components/search/CommandPalette';
 
 export async function TopNav() {
   const user = await requireUser();
@@ -16,12 +17,16 @@ export async function TopNav() {
             <Link href="/" className="hover:text-primary">
               Floor Plan
             </Link>
+            <Link href="/dashboard" className="hover:text-primary">
+              Dashboard
+            </Link>
             <Link href="/items" className="hover:text-primary">
               All Items
             </Link>
           </nav>
         </div>
         <div className="flex items-center gap-3">
+          <CommandPalette />
           <span className="text-sm text-muted-foreground">{user?.email}</span>
           <form action="/logout" method="post">
             <Button type="submit" variant="outline" size="sm">
