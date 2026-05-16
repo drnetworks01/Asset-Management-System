@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
 
   if (hasSessionCookie && isAuthRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = '/items';
+    url.pathname = '/';
     return NextResponse.redirect(url);
   }
 

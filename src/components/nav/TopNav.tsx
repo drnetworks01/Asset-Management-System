@@ -9,12 +9,15 @@ export async function TopNav() {
     <header className="border-b border-border bg-background">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-6">
-          <Link href="/items" className="font-bold text-lg tracking-tight">
+          <Link href="/" className="font-bold text-lg tracking-tight">
             Kurikara Assets
           </Link>
           <nav className="flex items-center gap-4 text-sm">
+            <Link href="/" className="hover:text-primary">
+              Floor Plan
+            </Link>
             <Link href="/items" className="hover:text-primary">
-              Items
+              All Items
             </Link>
           </nav>
         </div>

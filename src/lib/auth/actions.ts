@@ -38,7 +38,7 @@ export async function loginAction(
   session.role = user.role;
   await session.save();
 
-  redirect('/items');
+  redirect('/');
 }
 
 export async function logoutAction() {

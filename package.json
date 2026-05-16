@@ -10,11 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed:from-excel": "tsx scripts/excel-to-seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
-    "db:seed": "tsx scripts/seed-db.ts",
-    "db:reset": "tsx scripts/reset-db.ts"
+    "db:seed": "tsx scripts/seed-db.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
