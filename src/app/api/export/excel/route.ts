@@ -38,7 +38,9 @@ export async function GET(req: NextRequest) {
       byLoc.set(k, list);
     }
     for (const [loc, items] of byLoc) {
-      const ws = wb.addWorksheet(loc.slice(0, 31));
+      // Excel forbids * ? : \ / [ ] in sheet names; replace with space.
+      const safeName = loc.replace(/[*?:/\\[\]]/g, ' ').slice(0, 31).trim() || 'Sheet';
+      const ws = wb.addWorksheet(safeName);
       writeSheet(ws, items);
     }
   } else {

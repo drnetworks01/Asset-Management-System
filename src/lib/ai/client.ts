@@ -71,5 +71,19 @@ export async function aiJson<T>(opts: ChatOptions): Promise<T> {
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/```$/, '')
     .trim();
-  return JSON.parse(cleaned) as T;
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch {
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]) as T;
+      } catch {
+        // fall through
+      }
+    }
+    throw new Error(
+      `AI did not return valid JSON. First 200 chars: ${raw.slice(0, 200)}`,
+    );
+  }
 }
