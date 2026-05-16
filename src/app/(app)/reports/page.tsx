@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ImportWizard } from '@/components/import/ImportWizard';
+import { AiSearchPanel } from '@/components/ai/AiSearchPanel';
 import { Button } from '@/components/ui/button';
 
 export default function ReportsPage() {
@@ -30,6 +31,22 @@ export default function ReportsPage() {
           description="Printable A4 sheet of QR codes for every item."
           href="/qr"
         />
+        <ReportCard
+          title="Printable Inventory PDF"
+          description="A4-ready full inventory grouped by location. Print → Save as PDF."
+          href="/reports/print"
+        />
+        <ReportCard
+          title="Database Backup"
+          description="Download the entire SQLite database file (admin only)."
+          href="/api/backup"
+          download
+        />
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-lg font-semibold">AI Search</h2>
+        <AiSearchPanel />
       </section>
 
       <section>

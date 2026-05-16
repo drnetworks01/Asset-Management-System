@@ -6,6 +6,7 @@ import { createItemAction, updateItemAction, type ItemFormState } from '@/lib/ac
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AiCategorizeButton } from '@/components/ai/AiCategorizeButton';
 
 type LocationOption = { id: string; name: string };
 type CategoryOption = { id: string; name: string };
@@ -46,21 +47,44 @@ export function ItemForm({ mode, defaults = {}, locations, categories, onDone }:
       : createItemAction;
   const [state, formAction] = useActionState(boundAction, initial);
   const [condition, setCondition] = useState(defaults.condition ?? 'good');
+  const [name, setName] = useState(defaults.name ?? '');
+  const [notes, setNotes] = useState(defaults.notes ?? '');
+  const [categoryId, setCategoryId] = useState<string>(defaults.categoryId ?? '');
 
   if (state.ok && onDone) {
-    // schedule outside render
     setTimeout(onDone, 0);
+  }
+
+  function applySuggestion(s: {
+    itemName: string;
+    category: string;
+    condition: 'good' | 'broken' | 'repair';
+    damageNotes: string;
+  }) {
+    setName(s.itemName);
+    setCondition(s.condition);
+    if (s.damageNotes) setNotes(s.damageNotes);
+    const matched = categories.find(
+      (c) => c.name.toLowerCase() === s.category.toLowerCase(),
+    );
+    if (matched) setCategoryId(matched.id);
   }
 
   return (
     <form action={formAction} className="space-y-4">
+      {mode === 'create' && (
+        <div className="flex justify-end">
+          <AiCategorizeButton onSuggestion={applySuggestion} />
+        </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor="name">Item name</Label>
         <Input
           id="name"
           name="name"
           required
-          defaultValue={defaults.name}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Chair — Black"
         />
       </div>
@@ -90,7 +114,8 @@ export function ItemForm({ mode, defaults = {}, locations, categories, onDone }:
           <select
             id="categoryId"
             name="categoryId"
-            defaultValue={defaults.categoryId ?? ''}
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
             className="flex h-10 w-full rounded-md border border-border bg-transparent px-3 text-sm"
           >
             <option value="">— Uncategorized —</option>
@@ -138,7 +163,8 @@ export function ItemForm({ mode, defaults = {}, locations, categories, onDone }:
           id="notes"
           name="notes"
           rows={3}
-          defaultValue={defaults.notes ?? ''}
+          value={notes ?? ''}
+          onChange={(e) => setNotes(e.target.value)}
           className="w-full rounded-md border border-border bg-transparent p-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           placeholder="e.g. 'Singer brand, R32 gas'"
         />

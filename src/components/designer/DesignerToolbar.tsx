@@ -97,6 +97,7 @@ export function DesignerToolbar({ floors, activeLevel }: Props) {
           <ShapeBtn label="▭ Rect" onClick={() => setTool('rect')} />
           <ShapeBtn label="◯ Circle" onClick={() => setTool('circle')} />
           <ShapeBtn label="⌐ L-Shape" onClick={() => setTool('l_shape')} />
+          <ShapeBtn label="◇ Polygon" onClick={() => setTool('polygon')} />
         </div>
       </section>
 

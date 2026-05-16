@@ -14,6 +14,7 @@ const now = () => sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`;
 export const users = sqliteTable('users', {
   id: uuid(),
   email: text('email').notNull().unique(),
+  name: text('name'),
   passwordHash: text('password_hash').notNull(),
   role: text('role', { enum: ['admin', 'staff', 'viewer'] })
     .notNull()
@@ -84,6 +85,8 @@ export const items = sqliteTable(
       .default('good'),
     notes: text('notes'),
     qrCode: text('qr_code').unique(),
+    unitValueLkr: integer('unit_value_lkr'),
+    lowStockThreshold: integer('low_stock_threshold'),
     deletedAt: text('deleted_at'),
     createdAt: text('created_at').notNull().default(now()),
     updatedAt: text('updated_at').notNull().default(now()),
@@ -133,6 +136,33 @@ export const auditLog = sqliteTable(
   }),
 );
 
+export const assignments = sqliteTable(
+  'assignments',
+  {
+    id: uuid(),
+    itemId: text('item_id')
+      .notNull()
+      .references(() => items.id, { onDelete: 'cascade' }),
+    assigneeName: text('assignee_name').notNull(),
+    assigneeRole: text('assignee_role'),
+    qty: integer('qty').notNull().default(1),
+    notes: text('notes'),
+    issuedAt: text('issued_at').notNull().default(now()),
+    returnedAt: text('returned_at'),
+    issuedByUserId: text('issued_by_user_id').references(() => users.id),
+  },
+  (t) => ({
+    itemIdx: index('assignments_item_id_idx').on(t.itemId),
+    activeIdx: index('assignments_active_idx').on(t.returnedAt),
+  }),
+);
+
+export const settings = sqliteTable('settings', {
+  key: text('key').primaryKey(),
+  value: text('value', { mode: 'json' }).notNull(),
+  updatedAt: text('updated_at').notNull().default(now()),
+});
+
 export const importRuns = sqliteTable('import_runs', {
   id: uuid(),
   filename: text('filename').notNull(),
@@ -162,3 +192,6 @@ export type LocationShapeData = {
   rotation: number;
   points?: Array<{ x: number; y: number }>;
 };
+
+export type Assignment = typeof assignments.$inferSelect;
+export type Setting = typeof settings.$inferSelect;

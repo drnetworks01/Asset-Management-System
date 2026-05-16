@@ -147,7 +147,12 @@ export function LocationDrawer({ open, location, onClose }: Props) {
                           className="rounded-lg border border-border bg-background/60 p-3"
                         >
                           <div className="flex items-baseline justify-between gap-2">
-                            <p className="font-medium">{item.name}</p>
+                            <a
+                              href={`/items/${item.id}`}
+                              className="font-medium hover:text-primary"
+                            >
+                              {item.name}
+                            </a>
                             <span
                               className={cn(
                                 'shrink-0 rounded-full px-2 py-0.5 text-xs',

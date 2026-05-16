@@ -160,3 +160,95 @@ export async function deleteItemAction(itemId: string) {
   revalidatePath('/dashboard');
   return { ok: true };
 }
+
+export type BulkAction =
+  | { kind: 'condition'; condition: 'good' | 'broken' | 'repair' }
+  | { kind: 'move'; locationId: string }
+  | { kind: 'delete' };
+
+export async function bulkUpdateAction(
+  itemIds: string[],
+  action: BulkAction,
+): Promise<{ ok: boolean; error?: string; updated: number }> {
+  const user = await requireAdminOrStaff();
+  if (itemIds.length === 0) return { ok: true, updated: 0 };
+
+  let updated = 0;
+
+  if (action.kind === 'delete') {
+    if (user.role !== 'admin') {
+      return { ok: false, error: 'Admin only for bulk delete.', updated: 0 };
+    }
+    const stamp = new Date().toISOString();
+    for (const id of itemIds) {
+      await db
+        .update(schema.items)
+        .set({ deletedAt: stamp })
+        .where(eq(schema.items.id, id));
+      updated++;
+    }
+  } else if (action.kind === 'condition') {
+    for (const id of itemIds) {
+      await db
+        .update(schema.items)
+        .set({ condition: action.condition })
+        .where(eq(schema.items.id, id));
+      updated++;
+    }
+  } else if (action.kind === 'move') {
+    for (const id of itemIds) {
+      await db
+        .update(schema.items)
+        .set({ locationId: action.locationId })
+        .where(eq(schema.items.id, id));
+      updated++;
+    }
+  }
+
+  await recordAudit({
+    entityType: 'item',
+    action: action.kind === 'delete' ? 'delete' : 'update',
+    after: { bulk: action, itemIds: itemIds.slice(0, 200), totalUpdated: updated },
+    userEmail: user.email,
+  });
+
+  revalidatePath('/');
+  revalidatePath('/items');
+  revalidatePath('/dashboard');
+  return { ok: true, updated };
+}
+
+export async function updateItemValueAction(
+  itemId: string,
+  unitValueLkr: number | null,
+  lowStockThreshold: number | null,
+): Promise<{ ok: boolean; error?: string }> {
+  const user = await requireAdminOrStaff();
+  const before = await db
+    .select()
+    .from(schema.items)
+    .where(eq(schema.items.id, itemId))
+    .limit(1);
+  if (!before[0]) return { ok: false, error: 'not found' };
+
+  await db
+    .update(schema.items)
+    .set({ unitValueLkr, lowStockThreshold })
+    .where(eq(schema.items.id, itemId));
+
+  await recordAudit({
+    entityType: 'item',
+    entityId: itemId,
+    action: 'update',
+    before: {
+      unitValueLkr: before[0].unitValueLkr,
+      lowStockThreshold: before[0].lowStockThreshold,
+    },
+    after: { unitValueLkr, lowStockThreshold },
+    userEmail: user.email,
+  });
+
+  revalidatePath('/items');
+  revalidatePath('/dashboard');
+  return { ok: true };
+}

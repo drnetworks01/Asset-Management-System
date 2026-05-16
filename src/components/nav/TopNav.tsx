@@ -2,9 +2,13 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/auth/session';
 import { Button } from '@/components/ui/button';
 import { CommandPalette } from '@/components/search/CommandPalette';
+import { QrScanner } from '@/components/qr/QrScanner';
+import { ThemeToggle, LocaleToggle } from '@/components/ui/ThemeToggle';
+import { KeyboardShortcutsButton } from '@/components/ui/KeyboardShortcuts';
 
 export async function TopNav() {
-  const user = await requireUser();
+  const supabaseUser = await requireUser();
+  const isAdmin = supabaseUser?.role === 'admin';
 
   return (
     <header className="border-b border-border bg-background">
@@ -13,7 +17,7 @@ export async function TopNav() {
           <Link href="/" className="font-bold text-lg tracking-tight">
             Kurikara Assets
           </Link>
-          <nav className="flex items-center gap-4 text-sm">
+          <nav className="hidden items-center gap-4 text-sm md:flex">
             <Link href="/" className="hover:text-primary">
               Floor Plan
             </Link>
@@ -29,11 +33,22 @@ export async function TopNav() {
             <Link href="/reports" className="hover:text-primary">
               Reports
             </Link>
+            {isAdmin && (
+              <Link href="/admin/users" className="hover:text-primary">
+                Users
+              </Link>
+            )}
           </nav>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <CommandPalette />
-          <span className="text-sm text-muted-foreground">{user?.email}</span>
+          <QrScanner />
+          <KeyboardShortcutsButton />
+          <LocaleToggle />
+          <ThemeToggle />
+          <span className="hidden text-sm text-muted-foreground sm:inline">
+            {supabaseUser?.email}
+          </span>
           <form action="/logout" method="post">
             <Button type="submit" variant="outline" size="sm">
               Sign out
