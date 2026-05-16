@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
+import { db, schema } from '@/lib/db/client';
+import { asc, eq } from 'drizzle-orm';
 import {
   Table,
   TableBody,
@@ -10,50 +11,43 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-type ItemRow = {
-  id: string;
-  name: string;
-  qty: number;
-  condition: string;
-  notes: string | null;
-  locations: { name: string; slug: string } | null;
-  categories: { name: string } | null;
-};
-
 export default async function ItemsPage() {
-  const supabase = await createClient();
-  const { data: items, error } = await supabase
-    .from('items')
-    .select(
-      `
-      id,
-      name,
-      qty,
-      condition,
-      notes,
-      locations(name, slug),
-      categories(name)
-    `,
-    )
-    .order('name', { ascending: true })
+  const rows = await db
+    .select({
+      id: schema.items.id,
+      name: schema.items.name,
+      qty: schema.items.qty,
+      condition: schema.items.condition,
+      notes: schema.items.notes,
+      locationName: schema.locations.name,
+      categoryName: schema.categories.name,
+    })
+    .from(schema.items)
+    .leftJoin(schema.locations, eq(schema.items.locationId, schema.locations.id))
+    .leftJoin(schema.categories, eq(schema.items.categoryId, schema.categories.id))
+    .orderBy(asc(schema.items.name))
     .limit(500);
 
-  if (error) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <h1 className="text-2xl font-bold">Error</h1>
-        <pre className="mt-4 text-sm text-danger">{error.message}</pre>
-      </div>
-    );
-  }
-
-  const rows = (items ?? []) as unknown as ItemRow[];
+  const brokenCount = rows.filter((r) => r.condition === 'broken').length;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 space-y-4">
+    <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
       <header className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold">All Items</h1>
-        <p className="text-sm text-muted-foreground">{rows.length} items</p>
+        <div>
+          <h1 className="text-2xl font-bold">All Items</h1>
+          <p className="text-sm text-muted-foreground">
+            Imported from <code>Office_Assets_v2.xlsx</code>
+          </p>
+        </div>
+        <div className="flex items-center gap-4 text-sm">
+          <span className="rounded-full bg-success/15 px-3 py-1 text-success">
+            ✓ {rows.length - brokenCount} good
+          </span>
+          <span className="rounded-full bg-danger/15 px-3 py-1 text-danger">
+            ⚠ {brokenCount} broken
+          </span>
+          <span className="text-muted-foreground">{rows.length} total</span>
+        </div>
       </header>
 
       <Table>
@@ -71,8 +65,8 @@ export default async function ItemsPage() {
           {rows.map((item) => (
             <TableRow key={item.id}>
               <TableCell className="font-medium">{item.name}</TableCell>
-              <TableCell>{item.locations?.name ?? '—'}</TableCell>
-              <TableCell>{item.categories?.name ?? '—'}</TableCell>
+              <TableCell>{item.locationName ?? '—'}</TableCell>
+              <TableCell>{item.categoryName ?? '—'}</TableCell>
               <TableCell className="text-right tabular-nums">{item.qty}</TableCell>
               <TableCell>
                 <span

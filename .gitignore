@@ -18,5 +18,12 @@ coverage/
 tsconfig.tsbuildinfo
 *.tsbuildinfo
 
+# Local SQLite data
+data/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
 supabase/.branches
 supabase/.temp

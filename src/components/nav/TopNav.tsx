@@ -1,12 +1,9 @@
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
+import { requireUser } from '@/lib/auth/session';
 import { Button } from '@/components/ui/button';
 
 export async function TopNav() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await requireUser();
 
   return (
     <header className="border-b border-border bg-background">
