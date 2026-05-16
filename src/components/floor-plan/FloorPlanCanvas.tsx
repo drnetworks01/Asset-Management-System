@@ -1,11 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { LocationWithStats, FloorSummary } from '@/lib/queries/locations';
 import { Room } from './Room';
 import { FloorSwitcher } from './FloorSwitcher';
 import { FloorStatsPanel } from './FloorStatsPanel';
 import { LocationDrawer } from './LocationDrawer';
+import { useDesignerStore } from '@/stores/designerStore';
+import { DesignerCanvas } from '@/components/designer/DesignerCanvas';
+import { DesignerToolbar } from '@/components/designer/DesignerToolbar';
 
 type FloorPlanCanvasProps = {
   floors: FloorSummary[];
@@ -22,10 +25,28 @@ export function FloorPlanCanvas({
   locations,
   initialLevel,
 }: FloorPlanCanvasProps) {
-  const defaultLevel =
-    initialLevel ?? floors[0]?.level ?? 1;
+  const defaultLevel = initialLevel ?? floors[0]?.level ?? 1;
   const [activeLevel, setActiveLevel] = useState(defaultLevel);
   const [selected, setSelected] = useState<LocationWithStats | null>(null);
+
+  const mode = useDesignerStore((s) => s.mode);
+  const load = useDesignerStore((s) => s.load);
+
+  // Sync store with server data when entering designer
+  useEffect(() => {
+    load(
+      locations.map((l) => ({
+        id: l.id,
+        floorId: l.floorId,
+        name: l.name,
+        slug: l.slug,
+        shape: l.shape,
+        shapeData: l.shapeData,
+        color: l.color,
+        icon: l.icon,
+      })),
+    );
+  }, [locations, load]);
 
   const visibleLocations = useMemo(
     () => locations.filter((l) => l.floorLevel === activeLevel),
@@ -33,9 +54,7 @@ export function FloorPlanCanvas({
   );
 
   const viewBox = useMemo(() => {
-    if (visibleLocations.length === 0) {
-      return `0 0 ${MIN_W} ${MIN_H}`;
-    }
+    if (visibleLocations.length === 0) return `0 0 ${MIN_W} ${MIN_H}`;
     let maxX = MIN_W;
     let maxY = MIN_H;
     for (const loc of visibleLocations) {
@@ -48,16 +67,34 @@ export function FloorPlanCanvas({
 
   const activeFloor = floors.find((f) => f.level === activeLevel);
 
+  if (mode === 'design') {
+    return (
+      <>
+        <DesignerToolbar floors={floors} activeLevel={activeLevel} />
+        <div className="relative">
+          <div className="absolute right-4 top-4 z-20">
+            <FloorSwitcher
+              floors={floors}
+              activeLevel={activeLevel}
+              onChange={setActiveLevel}
+            />
+          </div>
+          {activeFloor && <DesignerCanvas activeFloorId={activeFloor.floorId} />}
+        </div>
+      </>
+    );
+  }
+
   return (
     <div className="relative flex h-[calc(100vh-72px)] w-full overflow-hidden">
-      {/* Canvas */}
       <div className="relative flex-1 overflow-auto">
-        <div className="sticky left-1/2 top-4 z-10 mx-auto -ml-[150px] inline-flex w-[300px] justify-center">
+        <div className="sticky left-1/2 top-4 z-10 mx-auto inline-flex w-fit -translate-x-1/2 items-center gap-2">
           <FloorSwitcher
             floors={floors}
             activeLevel={activeLevel}
             onChange={setActiveLevel}
           />
+          <DesignerToolbar floors={floors} activeLevel={activeLevel} />
         </div>
 
         <svg
@@ -67,12 +104,7 @@ export function FloorPlanCanvas({
           preserveAspectRatio="xMidYMid meet"
         >
           <defs>
-            <pattern
-              id="grid"
-              width="40"
-              height="40"
-              patternUnits="userSpaceOnUse"
-            >
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
               <path
                 d="M 40 0 L 0 0 0 40"
                 fill="none"
@@ -92,14 +124,13 @@ export function FloorPlanCanvas({
             <div className="rounded-lg border border-dashed border-border bg-background/60 px-8 py-6 text-center backdrop-blur">
               <p className="text-lg font-semibold">No rooms on this floor</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Add rooms via the Designer (coming in Phase 5).
+                Enter <span className="text-accent">Design Mode</span> to add rooms.
               </p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Stats panel */}
       <aside className="hidden w-[320px] flex-shrink-0 border-l border-border bg-background/40 backdrop-blur lg:block">
         {activeFloor && (
           <FloorStatsPanel
@@ -110,7 +141,6 @@ export function FloorPlanCanvas({
         )}
       </aside>
 
-      {/* Drawer */}
       <LocationDrawer
         open={selected !== null}
         location={selected}
