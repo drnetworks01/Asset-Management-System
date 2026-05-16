@@ -1,5 +1,5 @@
 import { db, schema } from '@/lib/db/client';
-import { asc, eq } from 'drizzle-orm';
+import { asc, eq, isNull } from 'drizzle-orm';
 import {
   Table,
   TableBody,
@@ -8,25 +8,37 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  AddItemButton,
+  ItemActionsRow,
+} from '@/components/items/ItemActions';
+import { getLocationsList, getCategoriesList } from '@/lib/queries/meta';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ItemsPage() {
-  const rows = await db
-    .select({
-      id: schema.items.id,
-      name: schema.items.name,
-      qty: schema.items.qty,
-      condition: schema.items.condition,
-      notes: schema.items.notes,
-      locationName: schema.locations.name,
-      categoryName: schema.categories.name,
-    })
-    .from(schema.items)
-    .leftJoin(schema.locations, eq(schema.items.locationId, schema.locations.id))
-    .leftJoin(schema.categories, eq(schema.items.categoryId, schema.categories.id))
-    .orderBy(asc(schema.items.name))
-    .limit(500);
+  const [rows, locations, categories] = await Promise.all([
+    db
+      .select({
+        id: schema.items.id,
+        name: schema.items.name,
+        qty: schema.items.qty,
+        condition: schema.items.condition,
+        notes: schema.items.notes,
+        locationId: schema.items.locationId,
+        categoryId: schema.items.categoryId,
+        locationName: schema.locations.name,
+        categoryName: schema.categories.name,
+      })
+      .from(schema.items)
+      .leftJoin(schema.locations, eq(schema.items.locationId, schema.locations.id))
+      .leftJoin(schema.categories, eq(schema.items.categoryId, schema.categories.id))
+      .where(isNull(schema.items.deletedAt))
+      .orderBy(asc(schema.items.name))
+      .limit(500),
+    getLocationsList(),
+    getCategoriesList(),
+  ]);
 
   const brokenCount = rows.filter((r) => r.condition === 'broken').length;
 
@@ -46,7 +58,8 @@ export default async function ItemsPage() {
           <span className="rounded-full bg-danger/15 px-3 py-1 text-danger">
             ⚠ {brokenCount} broken
           </span>
-          <span className="text-muted-foreground">{rows.length} total</span>
+          <span className="text-muted-foreground">{rows.length} rows</span>
+          <AddItemButton locations={locations} categories={categories} />
         </div>
       </header>
 
@@ -59,6 +72,7 @@ export default async function ItemsPage() {
             <TableHead className="text-right">Qty</TableHead>
             <TableHead>Condition</TableHead>
             <TableHead>Notes</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -69,19 +83,24 @@ export default async function ItemsPage() {
               <TableCell>{item.categoryName ?? '—'}</TableCell>
               <TableCell className="text-right tabular-nums">{item.qty}</TableCell>
               <TableCell>
-                <span
-                  className={
-                    item.condition === 'broken'
-                      ? 'inline-flex rounded-full bg-danger/15 px-2 py-0.5 text-xs text-danger'
-                      : 'inline-flex rounded-full bg-success/15 px-2 py-0.5 text-xs text-success'
-                  }
-                >
-                  {item.condition}
-                </span>
+                <ItemActionsRow
+                  item={{
+                    id: item.id,
+                    name: item.name,
+                    qty: item.qty,
+                    condition: item.condition,
+                    notes: item.notes,
+                    locationId: item.locationId,
+                    categoryId: item.categoryId,
+                  }}
+                  locations={locations}
+                  categories={categories}
+                />
               </TableCell>
               <TableCell className="text-muted-foreground text-sm">
                 {item.notes ?? '—'}
               </TableCell>
+              <TableCell />
             </TableRow>
           ))}
         </TableBody>
