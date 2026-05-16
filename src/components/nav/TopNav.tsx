@@ -26,6 +26,9 @@ export async function TopNav() {
             <Link href="/qr" className="hover:text-primary">
               QR Labels
             </Link>
+            <Link href="/reports" className="hover:text-primary">
+              Reports
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-3">
