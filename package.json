@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
-    "db:seed": "tsx scripts/seed-db.ts"
+    "db:seed": "tsx scripts/seed-db.ts",
+    "db:real-layout": "tsx scripts/apply-real-layout.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",

@@ -142,6 +142,18 @@ export function DesignerRoom({ room, svgRef }: Props) {
           style={{ cursor: 'move' }}
           onPointerDown={onPointerDownBody}
         />
+      ) : room.shapeData.points && room.shapeData.points.length >= 3 ? (
+        <polygon
+          points={room.shapeData.points
+            .map((p) => `${x + p.x},${y + p.y}`)
+            .join(' ')}
+          fill={`${room.color}66`}
+          stroke={selected ? '#F59E0B' : room.color}
+          strokeWidth={selected ? 3 : 2}
+          strokeLinejoin="round"
+          style={{ cursor: 'move' }}
+          onPointerDown={onPointerDownBody}
+        />
       ) : (
         <rect
           x={x}

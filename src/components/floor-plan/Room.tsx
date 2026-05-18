@@ -9,10 +9,23 @@ type RoomProps = {
   onSelect: (location: LocationWithStats) => void;
 };
 
+/**
+ * For polygon / L-shape rooms, the shapeData carries an array of {x,y} points
+ * relative to the room origin (x,y). We render them via `<polygon>`.
+ * The `width` and `height` values are kept for bbox / label positioning.
+ */
+function pointsAttr(
+  x: number,
+  y: number,
+  points: Array<{ x: number; y: number }>,
+): string {
+  return points.map((p) => `${x + p.x},${y + p.y}`).join(' ');
+}
+
 export function Room({ location, onSelect }: RoomProps) {
   const [hover, setHover] = useState(false);
   const {
-    shapeData: { x, y, width, height, rotation },
+    shapeData: { x, y, width, height, rotation, points },
     name,
     totalItems,
     goodCount,
@@ -27,6 +40,8 @@ export function Room({ location, onSelect }: RoomProps) {
   const cx = x + width / 2;
   const cy = y + height / 2;
   const transform = rotation ? `rotate(${rotation} ${cx} ${cy})` : undefined;
+
+  const polyPoints = points && points.length >= 3 ? pointsAttr(x, y, points) : null;
 
   return (
     <g
@@ -48,6 +63,14 @@ export function Room({ location, onSelect }: RoomProps) {
           fill={fill}
           stroke={stroke}
           strokeWidth={2}
+        />
+      ) : polyPoints ? (
+        <polygon
+          points={polyPoints}
+          fill={fill}
+          stroke={stroke}
+          strokeWidth={2}
+          strokeLinejoin="round"
         />
       ) : (
         <rect
