@@ -52,6 +52,7 @@ export const locations = sqliteTable(
     color: text('color').notNull().default('#0F766E'),
     icon: text('icon'),
     displayOrder: integer('display_order').notNull().default(0),
+    qrCode: text('qr_code').unique(),
     createdAt: text('created_at').notNull().default(now()),
     updatedAt: text('updated_at').notNull().default(now()),
   },

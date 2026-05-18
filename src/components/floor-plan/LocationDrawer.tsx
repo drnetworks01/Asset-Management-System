@@ -111,6 +111,12 @@ export function LocationDrawer({ open, location, onClose }: Props) {
                     {location.totalItems} total
                   </span>
                 </div>
+                <a
+                  href={`/r/${location.slug}`}
+                  className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  Open full room view + QR →
+                </a>
               </div>
               <button
                 onClick={onClose}

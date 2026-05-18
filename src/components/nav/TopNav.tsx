@@ -28,7 +28,10 @@ export async function TopNav() {
               All Items
             </Link>
             <Link href="/qr" className="hover:text-primary">
-              QR Labels
+              QR Items
+            </Link>
+            <Link href="/qr-rooms" className="hover:text-primary">
+              QR Rooms
             </Link>
             <Link href="/reports" className="hover:text-primary">
               Reports
