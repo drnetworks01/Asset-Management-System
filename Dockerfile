@@ -13,8 +13,10 @@ WORKDIR /app
 # Native build deps for better-sqlite3 + sharp + bcryptjs (just in case).
 RUN apk add --no-cache python3 make g++ libc6-compat
 
-# Enable corepack so the pinned pnpm version from package.json is used.
-RUN corepack enable
+# Enable corepack and pin pnpm explicitly. Without this, corepack auto-fetches
+# the latest pnpm (currently 11.x), which has Node 20 incompatibilities
+# (ERR_UNKNOWN_BUILTIN_MODULE). 10.33.2 matches the local dev environment.
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 
 # Copy lockfiles only — keeps this layer cached when source code changes.
 COPY package.json pnpm-lock.yaml ./
@@ -26,7 +28,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 RUN apk add --no-cache python3 make g++ libc6-compat
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
