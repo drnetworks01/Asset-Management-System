@@ -12,8 +12,10 @@ export DATABASE_FILE="${DATABASE_FILE:-/app/data/kurikara.db}"
 echo "[entrypoint] DB file: $DATABASE_FILE"
 
 # Apply Drizzle migrations (creates tables if missing, no-op if up-to-date)
+# Uses the globally-installed tsx (npm install -g in the Dockerfile) which
+# has its own complete node_modules with esbuild + get-tsconfig siblings.
 echo "[entrypoint] Running migrations..."
-node ./node_modules/tsx/dist/cli.mjs ./scripts/migrate.ts
+tsx ./scripts/migrate.ts
 
 # First-boot seed: only if items table is empty.
 # We use a tiny inline JS to avoid needing extra deps in the runner image.
@@ -30,7 +32,7 @@ db.close();
 
 if [ "$ITEM_COUNT" = "0" ]; then
   echo "[entrypoint] Empty database detected — running first-boot seed..."
-  node ./node_modules/tsx/dist/cli.mjs ./scripts/seed-db.ts || echo "[entrypoint] seed failed (continuing)"
+  tsx ./scripts/seed-db.ts || echo "[entrypoint] seed failed (continuing)"
 else
   echo "[entrypoint] DB has $ITEM_COUNT items — skipping seed."
 fi

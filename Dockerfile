@@ -76,7 +76,12 @@ COPY --from=deps --chown=nextjs:nodejs /app/node_modules/drizzle-orm ./node_modu
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/drizzle-kit ./node_modules/drizzle-kit
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/bcryptjs ./node_modules/bcryptjs
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/exceljs ./node_modules/exceljs
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/tsx ./node_modules/tsx
+
+# tsx + drizzle-kit need their transitive deps (esbuild, get-tsconfig, etc.)
+# which pnpm doesn't hoist to the root node_modules. Installing globally
+# in the runner stage gives us a clean, complete copy with proper sibling
+# packages — much smaller than copying pnpm's entire .pnpm store.
+RUN npm install -g tsx@4.22.0 drizzle-kit@latest --omit=optional 2>&1 | tail -3
 
 # Persistent volume mount target. Fly.io will mount the volume here.
 RUN mkdir -p /app/data/photos /app/data/imports && chown -R nextjs:nodejs /app/data
