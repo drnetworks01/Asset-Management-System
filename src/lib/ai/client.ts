@@ -38,7 +38,10 @@ export async function aiChat(opts: ChatOptions): Promise<string> {
     headers: {
       Authorization: `Bearer ${KEY}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3010',
+      // OpenRouter uses this for analytics / referer-based attribution only.
+      // Falls back to a generic identifier rather than a misleading localhost URL.
+      'HTTP-Referer':
+        process.env.NEXT_PUBLIC_SITE_URL || 'https://kurikara-assets.app',
       'X-Title': 'Kurikara Assets',
     },
     body: JSON.stringify({

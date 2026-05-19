@@ -133,12 +133,23 @@ export async function uploadImportAction(
   return { ok: true, diff };
 }
 
+// Matches the upload-id format generated in uploadImportAction:
+//   `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+// e.g. "1716125042-9a3z2k". Anything else is rejected before touching the filesystem.
+const UPLOAD_ID_PATTERN = /^\d+-[a-z0-9]{6}$/;
+
 export async function applyImportAction(
   uploadId: string,
 ): Promise<{ ok: boolean; error?: string; applied?: { added: number; updated: number } }> {
   const user = await requireUser();
   if (!user) return { ok: false, error: 'unauthorized' };
   if (user.role !== 'admin') return { ok: false, error: 'admin only' };
+
+  // Guard against path traversal — uploadId is caller-controlled and used in a
+  // filesystem path below. Without this check, "../foo" could read other files.
+  if (!UPLOAD_ID_PATTERN.test(uploadId)) {
+    return { ok: false, error: 'invalid upload id' };
+  }
 
   const meta = JSON.parse(
     await fs.readFile(path.join(TMP_DIR, `${uploadId}.json`), 'utf8'),

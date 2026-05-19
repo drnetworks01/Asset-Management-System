@@ -46,6 +46,10 @@ export async function returnAssignmentAction(
 ): Promise<{ ok: boolean; error?: string }> {
   const user = await requireUser();
   if (!user) return { ok: false, error: 'unauthorized' };
+  // Returning an assignment is a write — viewers may not.
+  if (!['admin', 'staff'].includes(user.role)) {
+    return { ok: false, error: 'forbidden' };
+  }
 
   const rows = await db
     .select()

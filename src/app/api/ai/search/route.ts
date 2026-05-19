@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { eq, and, isNull, sql } from 'drizzle-orm';
+import { eq, and, isNull, sql, inArray } from 'drizzle-orm';
 import { db, schema } from '@/lib/db/client';
 import { requireUser } from '@/lib/auth/session';
 import { aiEnabled, aiJson } from '@/lib/ai/client';
@@ -69,9 +69,7 @@ Always return ALL fields. Use empty arrays / nulls when not mentioned. The 'inte
     // Build SQL where clauses dynamically
     const conds = [isNull(schema.items.deletedAt)];
     if (filters.conditions?.length) {
-      conds.push(
-        sql`${schema.items.condition} in ${filters.conditions}`,
-      );
+      conds.push(inArray(schema.items.condition, filters.conditions));
     }
     if (filters.nameContains) {
       conds.push(sql`lower(${schema.items.name}) like ${`%${filters.nameContains.toLowerCase()}%`}`);
@@ -86,10 +84,10 @@ Always return ALL fields. Use empty arrays / nulls when not mentioned. The 'inte
       conds.push(sql`${schema.items.qty} <= ${filters.qtyMax}`);
     }
     if (filters.locationNames?.length) {
-      conds.push(sql`${schema.locations.name} in ${filters.locationNames}`);
+      conds.push(inArray(schema.locations.name, filters.locationNames));
     }
     if (filters.categoryNames?.length) {
-      conds.push(sql`${schema.categories.name} in ${filters.categoryNames}`);
+      conds.push(inArray(schema.categories.name, filters.categoryNames));
     }
 
     const rows = await db

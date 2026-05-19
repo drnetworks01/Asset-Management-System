@@ -4,7 +4,12 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import path from 'node:path';
 import fs from 'node:fs';
 
-const DB_PATH = path.resolve(process.cwd(), 'data/kurikara.db');
+// Honor the same DATABASE_FILE env var the runtime uses (see src/lib/db/client.ts).
+// This is critical on Fly.io where the volume mounts to a non-default path.
+const DB_PATH = path.resolve(
+  process.cwd(),
+  process.env.DATABASE_FILE ?? 'data/kurikara.db',
+);
 
 function ensureDir() {
   const dir = path.dirname(DB_PATH);

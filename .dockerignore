@@ -1,0 +1,31 @@
+# Don't ship dev artifacts or local secrets to Fly.
+node_modules
+.next
+out
+dist
+.git
+.gitignore
+.env
+.env.local
+.env*.local
+*.log
+.DS_Store
+.vscode
+.idea
+coverage
+.vitest-cache
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Local SQLite + uploaded files belong on the Fly volume, not in the image.
+data/
+
+# Documentation / fixtures we don't need at runtime (but we DO want
+# tests/fixtures/Office_Assets_v2.xlsx for first-boot seeding, so keep it).
+docs/
+*.md
+!README.md
+
+# Editor / OS noise
+Thumbs.db
+.env.example

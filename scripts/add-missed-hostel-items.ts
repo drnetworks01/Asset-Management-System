@@ -11,7 +11,10 @@ import Database from 'better-sqlite3';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-const DB_PATH = path.resolve(process.cwd(), 'data/kurikara.db');
+const DB_PATH = path.resolve(
+  process.cwd(),
+  process.env.DATABASE_FILE ?? 'data/kurikara.db',
+);
 const ADMIN_EMAIL = 'admin@kurikaralanka.local';
 
 type Insert = {

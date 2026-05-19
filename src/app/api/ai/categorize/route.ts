@@ -21,9 +21,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Cost / abuse guard: refuse anything past 1.5 MB of base64 (≈1 MB raw image).
+  // OpenRouter is billed per token and large images blow up the prompt fast.
+  const contentLength = Number(req.headers.get('content-length') ?? '0');
+  if (contentLength > 1_600_000) {
+    return NextResponse.json(
+      { error: 'image too large (max ~1 MB)' },
+      { status: 413 },
+    );
+  }
+
   const body = (await req.json()) as { imageDataUrl?: string };
   if (!body.imageDataUrl?.startsWith('data:image/')) {
     return NextResponse.json({ error: 'send imageDataUrl (data:image/...)' }, { status: 400 });
+  }
+  if (body.imageDataUrl.length > 1_500_000) {
+    return NextResponse.json(
+      { error: 'image too large (max ~1 MB)' },
+      { status: 413 },
+    );
   }
 
   const categories = await getCategoriesList();
