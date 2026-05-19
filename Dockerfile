@@ -68,6 +68,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nextjs:nodejs /app/tests/fixtures ./tests/fixtures
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+# seed-db.ts imports from ../src/lib/excel/parser etc. — needed by tsx at runtime.
+# tsconfig is needed by tsx to resolve the @/ path alias.
+COPY --from=builder --chown=nextjs:nodejs /app/src ./src
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./drizzle.config.ts
 
 # Drizzle migrator + seed scripts depend on these; the standalone output
 # only includes runtime deps, so we ship them explicitly. They're tiny.
