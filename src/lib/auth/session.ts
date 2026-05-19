@@ -8,33 +8,49 @@ export type SessionData = {
   role?: 'admin' | 'staff' | 'viewer';
 };
 
-const PASSWORD = process.env.SESSION_PASSWORD;
-if (!PASSWORD || PASSWORD.length < 32) {
-  // Fallback for dev convenience; in production this MUST come from env.
+// Lazy resolution: we MUST NOT throw at module-load time because Next.js's
+// build phase imports this file to collect route metadata. At build time the
+// runtime secrets aren't injected yet, so a top-level throw breaks the build.
+// Defer the strict check until first use.
+function resolvePassword(): string {
+  const PASSWORD = process.env.SESSION_PASSWORD;
+  if (PASSWORD && PASSWORD.length >= 32) return PASSWORD;
   if (process.env.NODE_ENV === 'production') {
     throw new Error(
       'SESSION_PASSWORD must be set in production (32+ chars).',
     );
   }
+  return 'dev-only-do-not-use-in-prod-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 }
 
-export const sessionOptions: SessionOptions = {
-  password:
-    PASSWORD && PASSWORD.length >= 32
-      ? PASSWORD
-      : 'dev-only-do-not-use-in-prod-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-  cookieName: 'kurikara_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
+let _sessionOptions: SessionOptions | undefined;
+function getSessionOptions(): SessionOptions {
+  if (!_sessionOptions) {
+    _sessionOptions = {
+      password: resolvePassword(),
+      cookieName: 'kurikara_session',
+      cookieOptions: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+      },
+    };
+  }
+  return _sessionOptions;
+}
+
+// Re-export as a Proxy-like getter so existing `sessionOptions` imports still
+// work but the strict resolution only fires on access.
+export const sessionOptions = new Proxy({} as SessionOptions, {
+  get(_t, prop) {
+    return Reflect.get(getSessionOptions(), prop);
   },
-};
+});
 
 export async function getSession() {
   const store = await cookies();
-  return getIronSession<SessionData>(store, sessionOptions);
+  return getIronSession<SessionData>(store, getSessionOptions());
 }
 
 export async function requireUser() {
