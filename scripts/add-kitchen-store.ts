@@ -67,6 +67,82 @@ const KITCHEN_STORE_ITEMS: ItemSpec[] = [
     notes: 'Qty not specified on sheet; defaulting to 1',
   },
   { name: 'Speaker', qty: 1, category: 'Electronics', notes: 'Sheet label: speekers' },
+
+  // ---- Added from owner photos (2026-05) ----------------------------------
+  // Quantities marked "(est.)" are read off the photos and should be verified
+  // against the physical count in the app UI.
+  {
+    name: 'Serving Platter (oval)',
+    qty: 2,
+    category: 'Utensil',
+    notes: 'Magenta floral; (est.) from photo — verify qty',
+  },
+  {
+    name: 'Rice/Soup Bowl',
+    qty: 6,
+    category: 'Utensil',
+    notes: 'Magenta leaf pattern; counted 6 in photo (2 stacks of 3)',
+  },
+  {
+    name: 'Tea Cup',
+    qty: 6,
+    category: 'Utensil',
+    notes: 'Gold-rim KE porcelain set; (est.) from photo — verify qty',
+  },
+  {
+    name: 'Tea Saucer',
+    qty: 6,
+    category: 'Utensil',
+    notes: 'Gold-rim KE porcelain set; (est.) from photo — verify qty',
+  },
+  {
+    name: 'Drinking Glass',
+    qty: 10,
+    category: 'Utensil',
+    notes: 'Clear tumbler; (est.) from photo — verify qty',
+  },
+  {
+    name: 'Stainless Steel Basin',
+    qty: 2,
+    category: 'Utensil',
+    notes: 'Large steel basin/tray; (est.) from photo — verify qty',
+  },
+  {
+    name: 'Electric Appliance (BIXTON)',
+    qty: 1,
+    category: 'Appliance',
+    notes: 'BIXTON branded boxes in photo; exact type/qty to be confirmed',
+  },
+  {
+    name: 'Flexible Connector Hose',
+    qty: 3,
+    category: 'Fixture',
+    notes: 'Red + white + maroon; counted 3 in photo',
+  },
+  {
+    name: 'Cistern Pull Chain',
+    qty: 1,
+    category: 'Fixture',
+    notes: 'Metal pull chain',
+  },
+  {
+    name: 'P-Trap (waste bend pipe)',
+    qty: 1,
+    category: 'Fixture',
+    notes: 'White waste bend',
+  },
+  {
+    name: 'Toilet Fixing Bolt Set',
+    qty: 1,
+    category: 'Fixture',
+    notes: 'Blue blister pack',
+  },
+  {
+    name: 'Water Tec Flexible Hose (boxed)',
+    qty: 1,
+    category: 'Fixture',
+    notes: 'Boxed, new',
+  },
 ];
 
 function main() {
