@@ -1,146 +1,157 @@
+<div align="center">
+
 # Kurikara Assets
 
-Office inventory management for the Kurikaralanka campus. Visualise every item, every location, and every condition badge on an interactive 2D floor plan that you can redesign yourself.
+**A visual, secure inventory platform for the Kurikaralanka campus.**
 
-**Stack:** Next.js 15 · React 19 · TypeScript · Tailwind · SQLite (Drizzle ORM) · iron-session · bcrypt · cmdk · exceljs · qrcode · Zustand
+Manage rooms, assets, condition, photos, QR labels, imports, and audit history from one operational workspace.
 
-## Features
+[![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-Drizzle-003B57?logo=sqlite&logoColor=white)](https://orm.drizzle.team/)
+[![Tests](https://img.shields.io/badge/tests-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 
-- 🗺️ **Interactive 2D Floor Plan** — Hover or click rooms to see what's inside. Health colour-coded (green → red).
-- 🎨 **Floor Designer Mode** — Drag, resize, rotate, recolour, rename rooms. Add new rooms with Rect / Circle / L-shape. Undo/redo. Snap-to-grid. Persist to DB.
-- 📊 **Dashboard** — Total / Good / Broken / Locations stat cards, condition donut, items-per-location chart, top-broken list.
-- ⌘ **Cmd-K Search** — Spotlight-style fuzzy search across items, locations, categories. Press Ctrl+K from anywhere.
-- ✏️ **CRUD** — Add, edit, delete items. Single-click condition toggle (good ↔ broken). Soft-delete with audit log.
-- 📷 **Photos** — Upload photos per item (stored locally in `data/photos/`). Served via authenticated `/api/photos/...` route.
-- 🔲 **QR Labels** — One unique 8-char code per item. `/qr` page renders an A4-printable label grid; scan opens the item.
-- 📑 **Reports** — Full inventory Excel export, per-location workbook with separate sheets, condition styling.
-- 📥 **Excel Re-import** — Upload a new `.xlsx`, see a 4-bucket diff (new / changed / unchanged / orphans), apply with one click. All changes audited.
-- 🔐 **Auth + Roles** — Email + password (iron-session sealed cookie). Roles: admin / staff / viewer.
+<!-- GPRM / https://gprm.itsvg.in/ -->
+![Repository visits](https://visitcount.itsvg.in/api?id=drnetworks01-Asset-Management-System&icon=5&color=6)
 
-## Setup
+</div>
 
-Requires Node 20+ and pnpm.
+## What this system does
+
+Kurikara Assets turns a conventional inventory register into an interactive campus map. Staff can locate equipment visually, update condition in place, attach evidence, print QR labels, and move data between the application and Excel without losing an audit trail.
+
+### Core capabilities
+
+| Area | Capability |
+|---|---|
+| Visual operations | Interactive two-floor plan with room health indicators and item drawers |
+| Layout design | Drag, resize, rotate, recolor, and create rectangle, circle, or L-shaped rooms |
+| Inventory | Role-aware create, update, soft-delete, condition toggles, photos, and audit events |
+| Discovery | Global `Ctrl/Cmd + K` search across items, locations, and categories |
+| Reporting | Dashboard metrics, condition analysis, Excel exports, and printable reports |
+| Data exchange | Four-way Excel import review: new, changed, unchanged, and orphaned rows |
+| QR workflow | Unique asset labels, room QR pages, printable grids, and scan-to-record navigation |
+| Access control | Sealed-cookie sessions with `admin`, `staff`, and `viewer` permissions |
+| AI assistance | Optional OpenRouter-powered inventory search and photo categorization |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    U["Admin / Staff / Viewer"] --> N["Next.js App Router"]
+    N --> A["iron-session authentication"]
+    N --> S["Server Actions and API routes"]
+    S --> D["Drizzle ORM"]
+    D --> Q[("SQLite inventory database")]
+    S --> F[("Local photo and import storage")]
+    S -. optional .-> O["OpenRouter AI"]
+```
+
+## Technology
+
+<div align="center">
+
+[![Technology stack](https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,nodejs,sqlite,docker)](https://skillicons.dev)
+
+</div>
+
+- Next.js 15 and React 19
+- TypeScript, Tailwind CSS, Zustand, and shadcn-style UI primitives
+- SQLite with Drizzle ORM and generated migrations
+- iron-session, bcrypt, ExcelJS, QRCode, and html5-qrcode
+- Vitest and Testing Library
+- Docker and Fly.io deployment assets
+
+## Quick start
+
+### Requirements
+
+- Node.js 20+
+- pnpm
 
 ```bash
 pnpm install
-cp .env.example .env.local      # then edit .env.local with a real SESSION_PASSWORD
-pnpm db:migrate                 # apply Drizzle schema to data/kurikara.db
-pnpm db:seed                    # parse tests/fixtures/Office_Assets_v2.xlsx and seed everything
-pnpm dev                        # open http://localhost:3010
+cp .env.example .env.local
 ```
 
-Default login:
-- **Email:** `admin@kurikaralanka.local`
-- **Password:** `admin1234` (change with `SEED_ADMIN_PASSWORD=... pnpm db:seed`)
+Set a unique session secret and seed password in `.env.local`:
 
-## Scripts
+```env
+SESSION_PASSWORD=<generate-a-random-32-plus-character-secret>
+SEED_ADMIN_EMAIL=admin@example.com
+SEED_ADMIN_PASSWORD=<choose-a-unique-12-plus-character-password>
+```
 
-| Script | What it does |
+Then initialize and run the application:
+
+```bash
+pnpm db:migrate
+pnpm db:seed
+pnpm dev
+```
+
+Open [http://localhost:3010](http://localhost:3010). The seed command creates the administrator account from the environment values above; the repository does not ship a default password.
+
+## Commands
+
+| Command | Purpose |
 |---|---|
-| `pnpm dev` | Start Next dev server on :3010 |
-| `pnpm build && pnpm start` | Production build + serve |
-| `pnpm test` | Run Vitest suite (parser + normalizer, 10 tests) |
-| `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm lint` | Next.js ESLint |
-| `pnpm db:generate` | Regenerate migration SQL from `src/lib/db/schema.ts` |
-| `pnpm db:migrate` | Apply pending migrations to local SQLite |
-| `pnpm db:seed` | Re-import Excel + create admin user |
+| `pnpm dev` | Run the development server on port 3010 |
+| `pnpm build` | Create a production build |
+| `pnpm start` | Serve the production build |
+| `pnpm typecheck` | Run TypeScript without emitting files |
+| `pnpm test` | Run the Vitest suite |
+| `pnpm db:generate` | Generate Drizzle migration SQL |
+| `pnpm db:migrate` | Apply pending SQLite migrations |
+| `pnpm db:seed` | Import fixtures and create the configured administrator |
 
-## Project layout
+## Access model
 
-```
-kurikara-assets/
-├── data/                       # local-only: kurikara.db + photos/ + imports/
-├── drizzle/                    # generated migrations
-├── tests/
-│   ├── excel/                  # parser + normalizer tests (Vitest)
-│   └── fixtures/Office_Assets_v2.xlsx
-└── src/
-    ├── app/
-    │   ├── (app)/              # auth-required routes — share TopNav layout
-    │   │   ├── page.tsx        # → floor plan
-    │   │   ├── dashboard/
-    │   │   ├── items/
-    │   │   ├── qr/             # printable label sheet
-    │   │   ├── reports/
-    │   │   └── logout/
-    │   ├── (auth)/login/
-    │   ├── api/
-    │   │   ├── locations/[id]/items
-    │   │   ├── search
-    │   │   ├── export/excel
-    │   │   └── photos/[...path]
-    │   ├── qr/[code]/          # public QR redirect (still auth-gated by middleware)
-    │   ├── layout.tsx
-    │   └── globals.css
-    ├── components/
-    │   ├── floor-plan/         # view-mode canvas + drawer + stats
-    │   ├── designer/           # edit-mode canvas + toolbar + handles
-    │   ├── items/              # ItemForm + ItemActionsRow + AddItemButton
-    │   ├── search/             # CommandPalette
-    │   ├── import/             # ImportWizard
-    │   ├── qr/                 # PrintButton
-    │   ├── nav/                # TopNav
-    │   ├── auth/               # LoginForm
-    │   └── ui/                 # shadcn-style primitives
-    ├── lib/
-    │   ├── db/                 # Drizzle schema + client
-    │   ├── actions/            # server actions (items, layout, import, photos)
-    │   ├── auth/               # session + login action
-    │   ├── queries/            # locations, dashboard, qr, meta
-    │   ├── excel/              # parser + normalizer
-    │   ├── audit.ts            # audit log helper
-    │   ├── qr.ts               # short code generator
-    │   ├── health.ts           # condition score → colour
-    │   └── utils.ts
-    ├── stores/                 # zustand stores
-    │   └── designerStore.ts
-    ├── middleware.ts           # cookie-gate redirect
-    └── types/env.d.ts
+| Role | Access |
+|---|---|
+| `admin` | Full inventory, user administration, deletes, and floor layout design |
+| `staff` | Add and edit assets, photos, imports, and condition updates |
+| `viewer` | Read-only inventory and reporting access |
+
+## Project map
+
+```text
+src/
+|- app/                  Next.js routes, API endpoints, auth, QR and reports
+|- components/           Floor plan, designer, inventory, search and UI modules
+|- lib/
+|  |- actions/           Server-side mutations
+|  |- auth/              Sessions and login flow
+|  |- db/                Drizzle client and schema
+|  |- excel/             Import parser and normalizer
+|  `- queries/           Dashboard and inventory reads
+|- stores/               Zustand designer state
+`- middleware.ts         Authentication gate
+
+drizzle/                 Versioned database migrations
+scripts/                 Migration, seed, password and operations tools
+tests/                   Vitest suites and import fixtures
+data/                    Local runtime database, photos and imports (ignored)
 ```
 
-## Roles
+## Security
 
-- **admin** — full access, including Floor Designer (layout edits) and deletes.
-- **staff** — add / edit items and condition toggles. No deletes. No layout edits.
-- **viewer** — read-only.
-
-Promote a user:
-
-```sql
-update users set role = 'admin' where email = 'someone@example.com';
-```
+- Never commit `.env`, `.env.local`, SQLite databases, uploads, or exports.
+- Generate a distinct `SESSION_PASSWORD` for every environment.
+- Seed credentials are mandatory; there is no well-known fallback password.
+- Run the application behind HTTPS and rotate credentials after suspected exposure.
+- Back up the ignored `data/` directory using encrypted, access-controlled storage.
 
 ## Deployment
 
-The app is a standard Next.js application with **two** local-only data dependencies:
-- `data/kurikara.db` — SQLite database (WAL mode)
-- `data/photos/` — uploaded photos
+The system expects persistent storage for `data/kurikara.db` and `data/photos/`. Use a single writable host or attach a persistent volume, terminate TLS at the proxy/platform, and set all values from `.env.example` through the platform secret manager.
 
-For a single-host deployment (DigitalOcean / Hetzner / your own server):
+See [`DEPLOY.md`](DEPLOY.md) for the Fly.io production workflow.
 
-```bash
-pnpm install --frozen-lockfile
-pnpm db:migrate
-pnpm build
-NODE_ENV=production pnpm start
-```
+## Maintainer activity
 
-Reverse-proxy port 3010 behind nginx/caddy with HTTPS. Set `NEXT_PUBLIC_SITE_URL` and `SESSION_PASSWORD` in production env.
-
-Back up `data/` regularly (`tar czf backup.tgz data/`).
-
-## Implementation history
-
-Built in 8 phases of full-stack development; see `git log` for per-phase commits.
-
-| Phase | Outcome |
-|---|---|
-| 1 | Foundation, SQLite, Drizzle, iron-session, login, items table |
-| 2 | Read-only floor plan with click-to-drawer + floor switcher |
-| 3 | Dashboard + Cmd-K palette |
-| 4 | CRUD + audit log |
-| 5 | Floor Designer mode (drag/resize/rotate + persist) |
-| 6 | Photos + QR labels |
-| 7 | Excel export + re-import wizard with diff |
-| 8 | Polish + production build |
+<!-- GPRM-generated GitHub component -->
+<div align="center">
+  <img src="https://github-readme-stats.vercel.app/api?username=drnetworks01&show_icons=true&theme=tokyonight&hide_border=true" alt="drnetworks01 GitHub statistics" height="165" />
+</div>

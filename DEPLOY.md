@@ -83,8 +83,7 @@ flyctl secrets set OPENROUTER_API_KEY="<your-key-here>" --app kurikara-assets
 flyctl secrets set NEXT_PUBLIC_SITE_URL="https://kurikara-assets.fly.dev" --app kurikara-assets
 
 # Seed admin credentials (used ONLY on first boot of an empty database).
-# The seed script REFUSES weak defaults in production — must be 10+ chars
-# and not "admin1234".
+# The seed script requires a unique password with at least 12 characters.
 flyctl secrets set SEED_ADMIN_EMAIL="admin@kurikaralanka.local" --app kurikara-assets
 flyctl secrets set SEED_ADMIN_PASSWORD="<a-strong-24-char-password>" --app kurikara-assets
 ```
@@ -149,7 +148,7 @@ The script reads `DATABASE_FILE` from env (set by the Dockerfile to `/app/data/k
 |---|---|
 | `fly: command not found` | Use `flyctl`, not `fly`. Open a fresh PowerShell window. |
 | `flyctl: command not found` even in fresh shell | Run `& "$env:USERPROFILE\.fly\bin\flyctl.exe" version`. If that works, PATH wasn't persisted — re-run `iwr https://fly.io/install.ps1 -useb \| iex`. |
-| First deploy fails at seed step | Check `flyctl secrets list` — all 5 secrets must be set. `SEED_ADMIN_PASSWORD` must be 10+ chars and not "admin1234". |
+| First deploy fails at seed step | Check `flyctl secrets list` — all required secrets must be set. `SEED_ADMIN_PASSWORD` must be unique and at least 12 characters. |
 | App is slow / cold-starts | `fly.toml` has `auto_stop_machines = "stop"` — the VM stops when idle (saves money on paid tier; free tier doesn't matter). To keep it always on, change to `auto_stop_machines = "off"`. |
 | Out of disk space | `flyctl volumes extend <vol-id> --size 3 --app kurikara-assets` |
 | Need to wipe the database | `flyctl ssh console --app kurikara-assets`, then `rm /app/data/kurikara.db*` and restart the machine. Next boot re-seeds. |

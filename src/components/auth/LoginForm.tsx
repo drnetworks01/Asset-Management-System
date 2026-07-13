@@ -46,9 +46,6 @@ export function LoginForm() {
       </div>
       {state.error && <p className="text-sm text-danger">{state.error}</p>}
       <SubmitButton />
-      <p className="pt-2 text-center text-xs text-muted-foreground">
-        Default admin password: <code className="font-mono">admin1234</code>
-      </p>
     </form>
   );
 }

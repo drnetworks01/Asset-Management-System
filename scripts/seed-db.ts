@@ -13,26 +13,13 @@ const DB_PATH = path.resolve(
 );
 const EXCEL_PATH = path.resolve(process.cwd(), 'tests/fixtures/Office_Assets_v2.xlsx');
 
-// In production we REFUSE to fall back to admin1234 — operators must set
-// real credentials. In dev/CI the well-known defaults are fine.
-if (process.env.NODE_ENV === 'production') {
-  if (!process.env.SEED_ADMIN_EMAIL || !process.env.SEED_ADMIN_PASSWORD) {
-    throw new Error(
-      'SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD must be set in production. ' +
-        'Set them via `flyctl secrets set` before running db:seed.',
-    );
-  }
-  if (
-    process.env.SEED_ADMIN_PASSWORD === 'admin1234' ||
-    process.env.SEED_ADMIN_PASSWORD.length < 10
-  ) {
-    throw new Error(
-      'SEED_ADMIN_PASSWORD must be at least 10 chars and not the well-known default.',
-    );
-  }
+if (!process.env.SEED_ADMIN_PASSWORD || process.env.SEED_ADMIN_PASSWORD.length < 12) {
+  throw new Error(
+    'SEED_ADMIN_PASSWORD must be set to a unique value with at least 12 characters before running db:seed.',
+  );
 }
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? 'admin@kurikaralanka.local';
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? 'admin1234';
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD;
 
 async function main() {
   const sqlite = new Database(DB_PATH);
