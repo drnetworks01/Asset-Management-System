@@ -12,8 +12,8 @@ Manage rooms, assets, condition, photos, QR labels, imports, and audit history f
 [![SQLite](https://img.shields.io/badge/SQLite-Drizzle-003B57?logo=sqlite&logoColor=white)](https://orm.drizzle.team/)
 [![Tests](https://img.shields.io/badge/tests-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 
-<!-- GPRM / https://gprm.itsvg.in/ -->
-![Repository visits](https://visitcount.itsvg.in/api?id=drnetworks01-Asset-Management-System&icon=5&color=6)
+<!-- GPRM-inspired README components / https://gprm.itsvg.in/ -->
+[![README style: GPRM](https://img.shields.io/badge/README_style-GPRM-8B5CF6)](https://gprm.itsvg.in/)
 
 </div>
 
